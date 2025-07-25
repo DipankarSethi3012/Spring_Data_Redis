@@ -1,19 +1,22 @@
-# Spring_Data_Redis
+# Spring Data Redis CRUD API with Rate Limiting
 
-A simple Spring Boot project demonstrating how to connect to Redis and perform all CRUD (Create, Read, Update, Delete) operations using Spring Data Redis.
+A simple Spring Boot project demonstrating how to connect to Redis and perform all CRUD (Create, Read, Update, Delete) operations using Spring Data Redis.  
+**Now includes rate limiting using Bucket4j and Redis!**
 
 ## Features
 
 - Connects to a Redis database
-- Implements CRUD operations for your data model
-- Written entirely in Java
-- Easily extendable for additional models or endpoints
+- Implements CRUD operations for the `User` model
+- REST API endpoints for Create, Read, Update, Delete
+- Rate limiting: restricts clients to 5 requests per minute per IP
+- Written in Java (Spring Boot)
+- Easily extendable for more models or endpoints
 
 ## Prerequisites
 
-- Java 8 or higher
-- Redis server running locally or remotely
-- Maven (for building the project)
+- Java 21 or higher
+- Redis server running locally (`localhost:6379`) or remotely
+- Maven
 
 ## Getting Started
 
@@ -24,10 +27,10 @@ A simple Spring Boot project demonstrating how to connect to Redis and perform a
    ```
 
 2. **Configure Redis**
-   Set your Redis connection details in the `application.properties` file:
+   Edit `src/main/resources/application.properties` if needed:
    ```
-   spring.redis.host=localhost
-   spring.redis.port=6379
+   spring.data.redis.host=localhost
+   spring.data.redis.port=6379
    ```
 
 3. **Build and run the project**
@@ -36,34 +39,55 @@ A simple Spring Boot project demonstrating how to connect to Redis and perform a
    mvn spring-boot:run
    ```
 
-## Usage
+## API Usage
 
-The project exposes endpoints for CRUD operations. Example endpoints (assuming a model called `User`):
+The project exposes endpoints for CRUD operations on `User`:
 
-- **Create**: `POST /users`
-- **Read**: `GET /users/{id}`
-- **Update**: `PUT /users/{id}`
-- **Delete**: `DELETE /users/{id}`
+| Method | Endpoint                | Description         |
+|--------|-------------------------|---------------------|
+| POST   | `/users`                | Create a user       |
+| GET    | `/users/{userId}`       | Get user by ID      |
+| GET    | `/users`                | List all users      |
+| PUT    | `/users/update/{userId}`| Update user         |
+| DELETE | `/users/delete/{userId}`| Delete user         |
 
-To interact, use tools like Postman or curl.
+**Rate Limiting:**  
+Each IP address is limited to 5 requests per minute.  
+If you exceed this, you’ll get a `429 Too Many Requests` response.
+
+## How Rate Limiting Works
+
+- Implemented using [Bucket4j](https://bucket4j.com/) and Redis.
+- See [`RateLimitFilter`](Project-for-Redis/src/main/java/com/example/demo/filter/RateLimitFilter.java) for details.
+- Configured in [`RedisConfig`](Project-for-Redis/src/main/java/com/example/demo/RedisConfig.java).
 
 ## Project Structure
 
-- `src/main/java/...` – Java source code (controllers, services, repository)
-- `src/main/resources/application.properties` – Configuration for Redis connection
+- `src/main/java/com/example/demo/model/User.java` – User model
+- `src/main/java/com/example/demo/dao/UserDao.java` – Redis CRUD logic
+- `src/main/java/com/example/demo/controller/UserController.java` – REST API endpoints
+- `src/main/java/com/example/demo/filter/RateLimitFilter.java` – Rate limiting filter
+- `src/main/java/com/example/demo/RedisConfig.java` – Redis and Redisson configuration
+- `src/main/resources/application.properties` – Redis connection settings
 
 ## Dependencies
 
 - Spring Boot Starter Data Redis
-- Spring Web
+- Spring Boot Starter Web
+- Bucket4j (rate limiting)
+- Redisson (Redis client)
+- Lombok (optional, for model)
 
 ## Contributing
 
-Pull requests are welcome! Please open an issue first to discuss what you’d like to change.
+Pull requests are welcome! Please open an issue first to discuss changes.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT License
 
 ---
 
+**For more details, see the code files:**
+- [Project-for-Redis/src/main/java/com/example/demo/filter/RateLimitFilter.java](Project-for-Redis/src/main/java/com/example/demo/filter/RateLimitFilter.java)
+- [Project-for-Redis/src/main/java/com/example/demo/RedisConfig.java](Project-for-Redis/src/main/java/com/example/demo/RedisConfig.java)

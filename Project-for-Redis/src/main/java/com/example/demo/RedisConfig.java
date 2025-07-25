@@ -1,5 +1,8 @@
 package com.example.demo;
 
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -7,6 +10,8 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import java.io.ObjectInputFilter;
 
 @Configuration
 public class RedisConfig {
@@ -34,6 +39,13 @@ public class RedisConfig {
         //value serializer
         redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer()); //used to convert the values into byte array
         return redisTemplate;
+    }
+
+    @Bean
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        config.useSingleServer().setAddress("redis://127.0.0.1:6379");
+        return Redisson.create(config);
     }
 }
 //RedisTemplate needs a connection to Redis. That Connection is supplied by RedisConnectionFactory. LettuceConnectionFactory is the most common implementation of the factory.
